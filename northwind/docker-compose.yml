@@ -1,0 +1,30 @@
+version: '3'
+
+networks:
+  appnet:
+
+volumes:
+  appvol:
+
+services:
+  nwdb:
+    image: dockercourse12345/nwdb:latest
+    build:
+      context: ./database
+    environment:
+    - MYSQL_ROOT_PASSWORD=changeit
+    networks:
+    - appnet
+    volumes:
+    - appvol:/var/lib/mysql
+
+  nwapp:
+    image: dockercourse12345/nwdbserver:latest
+    build:
+      context: ./server
+    environment:
+    - DB_HOST=nwdb
+    ports:
+    - 3000:3000
+    networks:
+    - appnet
