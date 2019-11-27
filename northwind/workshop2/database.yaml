@@ -72,7 +72,7 @@ metadata:
 
 spec:
   selector:
-    name: nwapp
+    name: nwdb-pod
     version: v1
   type: ClusterIP
   ports:
