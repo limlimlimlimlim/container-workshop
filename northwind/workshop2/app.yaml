@@ -1,0 +1,66 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nwapp-deploy
+  namespace: nwapp
+  labels:
+    name: nwapp-deploy
+    version: v1
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nwapp-pod
+      version: v1
+  template:
+    metadata:
+      name: nwapp-pod
+      labels:
+        name: nwapp-pod
+        version: v1
+    spec:
+      containers:
+        - name: nwapp-container
+          image: stackupiss/northwind-app:v2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_HOST
+              value: nwdb-svc.nwapp.svc.cluster.local
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nwdb-secret
+                  key: db-password
+            - name: DB_USER
+              value: root
+            - name: INSTANCE_IP_ADDRESS
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  namespace: nwapp
+  name: nwapp-svc
+
+spec:
+  selector:
+    name: nwapp-pod
+
+  type: LoadBalancer
+  ports:
+    - name: nwdb-svc-port
+      port: 80
+      targetPort: 3000
+
+
+              
