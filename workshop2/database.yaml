@@ -1,0 +1,85 @@
+---
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: nwapp
+  labels:
+    name: nwapp
+    version: v1
+
+---
+
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: nwdb-secret
+  namespace: nwapp
+
+data:
+  db-password: Y2hhbmdlaXQ=
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nwdb-deploy
+  namespace: nwapp
+  labels:
+    name: nwdb-deploy
+    version: v1
+
+spec:
+  replicas: 1
+  minReadySeconds: 30
+  selector:
+    matchLabels:
+      name: nwdb-pod
+      version: v1
+  template:
+    metadata:
+      name: nwdb-pod
+      labels:
+        name: nwdb-pod
+        version: v1
+    spec:
+      containers:
+        - name: nwdb-container
+          image: stackupiss/northwind-db:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nwdb-secret
+                  key: db-password
+          ports:
+            - name: nwdb-port
+              containerPort: 3306
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  namespace: nwapp
+  name: nwdb-svc
+
+spec:
+  selector:
+    name: nwdb-pod
+    version: v1
+  type: ClusterIP
+  ports:
+    - name: nwdb-svc-port
+      port: 3306
+      targetPort: nwdb-port
+
+---
+
+
