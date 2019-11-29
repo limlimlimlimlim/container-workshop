@@ -1,0 +1,43 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+
+metadata:
+  name: weather-deployment
+
+spec:
+  template:
+    metadata: 
+      labels:
+        name: weather
+        version: v1
+    spec:
+      containers:
+        - name: weather-container
+          image: stackupiss/weather:v1
+          env:
+            - name: "APP_ID"
+              value: "392ea95cb87e1a5a10217b92a0d9baf7"
+          ports:
+            - containerPort: 3000
+              #name: weathercont-port
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: weather-svc
+
+spec:
+  selector:
+    name: weatherapp
+    version: v1
+  ports:
+    - port: 80
+      targetPort: 3000 #weather-container-port
+
+---
+
